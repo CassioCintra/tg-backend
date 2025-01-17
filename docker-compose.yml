@@ -1,0 +1,216 @@
+services:
+  ms-customer:
+    image: ms-customer-image
+    container_name: ms-customer
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    build: ./ms-customer
+    environment:
+      # Server Configuration
+      SERVER_PORT: 8080
+
+      # Spring Application
+      SPRING_APPLICATION_NAME: ms-customer
+
+      # Locale Configuration
+      SPRING_WEB_LOCALE_RESOLVER: fixed
+      SPRING_WEB_LOCALE: pt-BR
+      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX-AGE: 3600
+
+      # MySQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 020899
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+
+      # JPA Configuration
+      SPRING_JPA_SHOW-SQL: "true"
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+
+      # Springdoc OpenApi & Swagger
+      SPRINGDOC_SWAGGER-UI_PATH: /docs.html
+      SPRINGDOC_API-DOCS_PATH: /docs
+      SPRINGDOC_PACKAGES-TO-SCAN: tg.espetinho.web.controller
+    depends_on:
+      - ms-order
+    networks:
+      - backend
+
+  ms-delivery:
+    image: ms-delivery-image
+    container_name: ms-delivery
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    build: ./ms-delivery
+    environment:
+      # Server Configuration
+      SERVER_PORT: 8081
+
+      # Spring Application
+      SPRING_APPLICATION_NAME: ms-delivery
+
+      # Locale Configuration
+      SPRING_WEB_LOCALE_RESOLVER: fixed
+      SPRING_WEB_LOCALE: pt-BR
+      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX-AGE: 3600
+
+      # MySQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 020899
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+
+      # JPA Configuration
+      SPRING_JPA_SHOW-SQL: "true"
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+
+      # Springdoc OpenApi & Swagger
+      SPRINGDOC_SWAGGER-UI_PATH: /docs.html
+      SPRINGDOC_API-DOCS_PATH: /docs
+      SPRINGDOC_PACKAGES-TO-SCAN: tg.espetinho.web.controller
+    networks:
+      - backend
+
+  ms-order:
+    image: ms-order-image
+    container_name: ms-order
+    restart: on-failure
+    ports:
+      - "8082:8082"
+    build: ./ms-order
+    environment:
+      # Server Configuration
+      SERVER_PORT: 8082
+
+      # Spring Application
+      SPRING_APPLICATION_NAME: ms-order
+
+      # Locale Configuration
+      SPRING_WEB_LOCALE_RESOLVER: fixed
+      SPRING_WEB_LOCALE: pt-BR
+      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://db-espetinho:4200"
+      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX-AGE: 3600
+
+      # MySQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 020899
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+
+      # JPA Configuration
+      SPRING_JPA_SHOW-SQL: "true"
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+
+      # Springdoc OpenApi & Swagger
+      SPRINGDOC_SWAGGER-UI_PATH: /docs.html
+      SPRINGDOC_API-DOCS_PATH: /docs
+      SPRINGDOC_PACKAGES-TO-SCAN: tg.espetinho.web.controller
+    depends_on:
+      - ms-shopping-cart
+      - ms-delivery
+    networks:
+      - backend
+
+  ms-product:
+    image: ms-product-image
+    container_name: ms-product
+    restart: on-failure
+    ports:
+      - "8083:8083"
+    build: ./ms-product
+    environment:
+      # Server Configuration
+      SERVER_PORT: 8083
+
+      # Spring Application
+      SPRING_APPLICATION_NAME: ms-product
+
+      # Locale Configuration
+      SPRING_WEB_LOCALE_RESOLVER: fixed
+      SPRING_WEB_LOCALE: pt-BR
+      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX-AGE: 3600
+
+      # MySQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 020899
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+
+      # JPA Configuration
+      SPRING_JPA_SHOW-SQL: "true"
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+
+      # Springdoc OpenApi & Swagger
+      SPRINGDOC_SWAGGER-UI_PATH: /docs.html
+      SPRINGDOC_API-DOCS_PATH: /docs
+      SPRINGDOC_PACKAGES-TO-SCAN: tg.espetinho.web.controller
+    networks:
+      - backend
+
+  ms-shopping-cart:
+    image: ms-shopping-cart-image
+    container_name: ms-shopping-cart
+    restart: on-failure
+    ports:
+      - "8084:8084"
+    build: ./ms-shopping-cart
+    environment:
+          # Server Configuration
+      SERVER_PORT: 8084
+
+      # Spring Application
+      SPRING_APPLICATION_NAME: ms-shopping-cart
+
+      # Locale Configuration
+      SPRING_WEB_LOCALE_RESOLVER: fixed
+      SPRING_WEB_LOCALE: pt-BR
+
+      # Cors Configuration
+      SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED_HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW_CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX_AGE: 3600
+
+      #PostgreSQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db.ffszbrjsbhmwfsxoenvt.supabase.co:5432/postgres?user=postgres&password=IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+      # JPA Configuration
+      SPRING_JPA_SHOW-SQL: "true"
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+
+      # Springdoc OpenApi & Swagger
+      SPRINGDOC_SWAGGER-UI_PATH: /docs.html
+      SPRINGDOC_API-DOCS_PATH: /docs
+      SPRINGDOC_PACKAGES-TO-SCAN: tg.espetinho.web.controller
+    depends_on:
+      - ms-product
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  db-espetinho:
