@@ -1,6 +1,5 @@
 services:
   ms-customer:
-    image: ms-customer-image
     container_name: ms-customer
     restart: on-failure
     ports:
@@ -11,26 +10,28 @@ services:
       SERVER_PORT: 8080
 
       # Spring Application
-      SPRING_APPLICATION_NAME: ms-customer
+      SPRING_APPLICATION_NAME: ms-shopping-cart
 
       # Locale Configuration
       SPRING_WEB_LOCALE_RESOLVER: fixed
       SPRING_WEB_LOCALE: pt-BR
-      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://localhost:4200"
-      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
-      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
-      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
-      SPRING_WEB_CORS_MAX-AGE: 3600
 
-      # MySQL Database Connection
-      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 020899
-      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+      # Cors Configuration
+      SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED_HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW_CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX_AGE: 3600
+
+      #PostgreSQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db.ffszbrjsbhmwfsxoenvt.supabase.co:5432/postgres?user=postgres&password=IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
       # JPA Configuration
       SPRING_JPA_SHOW-SQL: "true"
-      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
 
       # Springdoc OpenApi & Swagger
       SPRINGDOC_SWAGGER-UI_PATH: /docs.html
@@ -42,7 +43,6 @@ services:
       - backend
 
   ms-delivery:
-    image: ms-delivery-image
     container_name: ms-delivery
     restart: on-failure
     ports:
@@ -53,26 +53,28 @@ services:
       SERVER_PORT: 8081
 
       # Spring Application
-      SPRING_APPLICATION_NAME: ms-delivery
+      SPRING_APPLICATION_NAME: ms-shopping-cart
 
       # Locale Configuration
       SPRING_WEB_LOCALE_RESOLVER: fixed
       SPRING_WEB_LOCALE: pt-BR
-      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://localhost:4200"
-      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
-      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
-      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
-      SPRING_WEB_CORS_MAX-AGE: 3600
 
-      # MySQL Database Connection
-      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 020899
-      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+      # Cors Configuration
+      SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED_HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW_CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX_AGE: 3600
+
+      #PostgreSQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db.ffszbrjsbhmwfsxoenvt.supabase.co:5432/postgres?user=postgres&password=IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
       # JPA Configuration
       SPRING_JPA_SHOW-SQL: "true"
-      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
 
       # Springdoc OpenApi & Swagger
       SPRINGDOC_SWAGGER-UI_PATH: /docs.html
@@ -82,7 +84,6 @@ services:
       - backend
 
   ms-order:
-    image: ms-order-image
     container_name: ms-order
     restart: on-failure
     ports:
@@ -93,26 +94,28 @@ services:
       SERVER_PORT: 8082
 
       # Spring Application
-      SPRING_APPLICATION_NAME: ms-order
+      SPRING_APPLICATION_NAME: ms-shopping-cart
 
       # Locale Configuration
       SPRING_WEB_LOCALE_RESOLVER: fixed
       SPRING_WEB_LOCALE: pt-BR
-      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://db-espetinho:4200"
-      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
-      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
-      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
-      SPRING_WEB_CORS_MAX-AGE: 3600
 
-      # MySQL Database Connection
-      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 020899
-      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+      # Cors Configuration
+      SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED_HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW_CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX_AGE: 3600
+
+      #PostgreSQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db.ffszbrjsbhmwfsxoenvt.supabase.co:5432/postgres?user=postgres&password=IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
       # JPA Configuration
       SPRING_JPA_SHOW-SQL: "true"
-      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
 
       # Springdoc OpenApi & Swagger
       SPRINGDOC_SWAGGER-UI_PATH: /docs.html
@@ -125,7 +128,6 @@ services:
       - backend
 
   ms-product:
-    image: ms-product-image
     container_name: ms-product
     restart: on-failure
     ports:
@@ -136,26 +138,28 @@ services:
       SERVER_PORT: 8083
 
       # Spring Application
-      SPRING_APPLICATION_NAME: ms-product
+      SPRING_APPLICATION_NAME: ms-shopping-cart
 
       # Locale Configuration
       SPRING_WEB_LOCALE_RESOLVER: fixed
       SPRING_WEB_LOCALE: pt-BR
-      SPRING_WEB_CORS_ALLOWED-ORIGINS: "http://localhost:4200"
-      SPRING_WEB_CORS_ALLOWED-METHODS: "GET,POST,PUT,DELETE"
-      SPRING_WEB_CORS_ALLOWED-HEADERS: "Content-Type,Authorization"
-      SPRING_WEB_CORS_ALLOW-CREDENTIALS: "true"
-      SPRING_WEB_CORS_MAX-AGE: 3600
 
-      # MySQL Database Connection
-      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/espetinho?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 020899
-      SPRING_DATASOURCE_DRIVER-CLASS-NAME: com.mysql.cj.jdbc.Driver
+      # Cors Configuration
+      SPRING_WEB_CORS_ALLOWED_ORIGINS: "http://localhost:4200"
+      SPRING_WEB_CORS_ALLOWED_METHODS: "GET,POST,PUT,DELETE"
+      SPRING_WEB_CORS_ALLOWED_HEADERS: "Content-Type,Authorization"
+      SPRING_WEB_CORS_ALLOW_CREDENTIALS: "true"
+      SPRING_WEB_CORS_MAX_AGE: 3600
+
+      #PostgreSQL Database Connection
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db.ffszbrjsbhmwfsxoenvt.supabase.co:5432/postgres?user=postgres&password=IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: IjfSFcmjc5XTo3TM
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
 
       # JPA Configuration
       SPRING_JPA_SHOW-SQL: "true"
-      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
 
       # Springdoc OpenApi & Swagger
       SPRINGDOC_SWAGGER-UI_PATH: /docs.html
@@ -165,14 +169,13 @@ services:
       - backend
 
   ms-shopping-cart:
-    image: ms-shopping-cart-image
     container_name: ms-shopping-cart
     restart: on-failure
     ports:
       - "8084:8084"
     build: ./ms-shopping-cart
     environment:
-          # Server Configuration
+      # Server Configuration
       SERVER_PORT: 8084
 
       # Spring Application
@@ -197,7 +200,7 @@ services:
 
       # JPA Configuration
       SPRING_JPA_SHOW-SQL: "true"
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_DATABASE-PLATFORM: org.hibernate.dialect.PostgreSQLDialect
 
       # Springdoc OpenApi & Swagger
       SPRINGDOC_SWAGGER-UI_PATH: /docs.html
@@ -211,6 +214,3 @@ services:
 networks:
   backend:
     driver: bridge
-
-volumes:
-  db-espetinho:

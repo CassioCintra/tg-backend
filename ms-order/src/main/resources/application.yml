@@ -26,6 +26,7 @@ spring:
   # JPA Config
   jpa:
     show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 # Springdoc OpenApi 3.1 & Swagger 3
 springdoc:

@@ -22,9 +22,9 @@ public class CustomerController {
         return ResponseEntity.ok().body(customerList);
     }
 
-    @GetMapping(value= "/search", params = "cpf")
-    public ResponseEntity<FindResponseDTO> findCustomerById(@RequestParam String cpf) {
-        FindResponseDTO customerResponseDTO = customerService.findCustomerById(cpf);
+    @GetMapping(value= "/search")
+    public ResponseEntity<FindResponseDTO> findCustomerById(@RequestBody FindRequestDTO requestDTO) {
+        FindResponseDTO customerResponseDTO = customerService.findCustomerById(requestDTO);
         return ResponseEntity.ok().body(customerResponseDTO);
     }
 
@@ -35,15 +35,14 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(customerDTO);
     }
 
-    @PutMapping(params = "cpf")
-    public ResponseEntity<Void> updateCustomer(@RequestParam String cpf,
-                                               @RequestBody UpdateRequestDTO customerRequestDTO) {
-        customerService.updateCustomer(cpf, customerRequestDTO);
+    @PutMapping()
+    public ResponseEntity<Void> updateCustomer(@RequestBody UpdateRequestDTO customerRequestDTO) {
+        customerService.updateCustomer(customerRequestDTO);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping(params = "cpf")
-    public ResponseEntity<Void> deleteCustomer(@RequestParam DeleteRequestDTO dto) {
+    @DeleteMapping()
+    public ResponseEntity<Void> deleteCustomer(@RequestBody DeleteRequestDTO dto) {
         customerService.deleteCustomer(dto);
         return ResponseEntity.noContent().build();
     }
