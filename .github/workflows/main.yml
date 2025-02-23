@@ -15,6 +15,9 @@ jobs:
     uses: ./.github/workflows/build.yml
     with:
       spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   test:
     needs: build
