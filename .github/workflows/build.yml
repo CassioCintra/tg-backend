@@ -8,8 +8,10 @@ on:
         required: true
     secrets:
       DOCKER_USERNAME:
+        description: 'Docker Hub username'
         required: true
       DOCKER_PASSWORD:
+        description: 'Docker Hub password or access token'
         required: true
 
 permissions:
