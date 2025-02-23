@@ -57,7 +57,7 @@ jobs:
 
       - name: Upload tag artifact
         if: github.ref == 'refs/heads/main'  # Apenas em produção
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Atualizado para v4
         with:
           name: latest-tag
           path: artifacts/latest-tag.txt

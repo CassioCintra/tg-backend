@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Docker Compose
         run: |
@@ -28,7 +28,7 @@ jobs:
 
       - name: Download previous tag artifact (production only)
         if: inputs.environment == 'production'
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: latest-tag
           path: artifacts/
@@ -111,7 +111,7 @@ jobs:
 
       - name: Upload current tag artifact (production only)
         if: inputs.environment == 'production' && !failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: latest-tag
           path: artifacts/latest-tag.txt
