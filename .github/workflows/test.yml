@@ -1,0 +1,36 @@
+name: Run Tests
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Images"]
+    types:
+      - completed
+    branches:
+      - main
+      - dev
+
+jobs:
+  test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Test Microservice ${{ matrix.ms }}
+        run: |
+          cd ${{ matrix.ms }}
+          mvn test
+        env:
+          SPRING_PROFILES_ACTIVE: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}

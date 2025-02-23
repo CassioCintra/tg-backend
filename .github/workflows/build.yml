@@ -1,0 +1,55 @@
+name: Build and Push Images
+
+on:
+  workflow_run:
+    workflows: ["Validate Dependencies"]
+    types:
+      - completed
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Só executa se o validate for bem-sucedido
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build Maven package
+        run: |
+          cd ${{ matrix.ms }}
+          mvn clean install -DskipTests
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        run: |
+          cd ${{ matrix.ms }}
+          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
+          TAG="$PROFILE-$(date +%Y%m%d%H%M%S)"
+          docker build -t cassiocintra/tg-backend:$TAG \
+            --build-arg SPRING_PROFILES_ACTIVE=$PROFILE .
+          docker tag cassiocintra/tg-backend:$TAG cassiocintra/tg-backend:$PROFILE
+          docker push cassiocintra/tg-backend:$TAG
+          docker push cassiocintra/tg-backend:$PROFILE

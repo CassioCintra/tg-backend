@@ -1,0 +1,37 @@
+name: Validate Dependencies
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Find microservices
+        id: find-services
+        run: |
+          SERVICES="ms-customer,ms-delivery,ms-order,ms-product,ms-shopping-cart"
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+
+      - name: Validate dependencies
+        run: |
+          IFS=',' read -ra SERVICES <<< "${{ steps.find-services.outputs.services }}"
+          for service in "${SERVICES[@]}"; do
+            echo "Validating dependencies for $service..."
+            cd "$service" || exit 1
+            mvn dependency:resolve --fail-at-end
+            cd - >/dev/null || exit 1
+          done
