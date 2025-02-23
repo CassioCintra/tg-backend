@@ -8,7 +8,7 @@ on:
         required: true
     secrets:
       DOCKER_USERNAME:
-        description: 'Docker Hub username'  # Credenciais para Docker Hub
+        description: 'Docker Hub username'
         required: true
       DOCKER_PASSWORD:
         description: 'Docker Hub password or access token'
