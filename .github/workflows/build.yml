@@ -6,12 +6,16 @@ on:
       spring_profile:
         type: string
         required: true
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
 
-# Adiciona permissões para acessar secrets
 permissions:
   contents: read
   actions: write
-  secrets: read  # Permite leitura das secrets
+  secrets: read
 
 jobs:
   build:
