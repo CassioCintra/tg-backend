@@ -10,45 +10,54 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Validate environment variables
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build Maven package
         run: |
-          if [ -z "${{ inputs.spring_profile }}" ]; then
-            echo "SPRING_PROFILES_ACTIVE is not set!"
-            exit 1
-          fi
+          cd ${{ matrix.ms }}
+          mvn clean install -DskipTests
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          version: v0.10.0
-
-      - name: Set up Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
 
       - name: Login to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          if [ $? -ne 0 ]; then
-            echo "Docker Hub login failed!"
-            exit 1
-          fi
 
-      - name: Build Docker images
+      - name: Build and push Docker image
+        id: build
         run: |
-          docker-compose build
-        env:
-          SPRING_PROFILES_ACTIVE: ${{ inputs.spring_profile }}
+          cd ${{ matrix.ms }}
+          TAG="${{ inputs.spring_profile }}-$(date +%Y%m%d%H%M%S)"
+          docker build -t cassiocintra/tg-backend:$TAG \
+            --build-arg SPRING_PROFILES_ACTIVE=${{ inputs.spring_profile }} .
+          docker tag cassiocintra/tg-backend:$TAG cassiocintra/tg-backend:${{ inputs.spring_profile }}
+          docker push cassiocintra/tg-backend:$TAG
+          docker push cassiocintra/tg-backend:${{ inputs.spring_profile }}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Push Docker images
+      - name: Save tag as artifact
+        if: github.ref == 'refs/heads/main'  # Apenas em produção
         run: |
-          docker-compose push
-        env:
-          SPRING_PROFILES_ACTIVE: ${{ inputs.spring_profile }}
+          echo "${{ steps.build.outputs.tag }}" > latest-tag.txt
+          mkdir -p artifacts
+          mv latest-tag.txt artifacts/
+
+      - name: Upload tag artifact
+        if: github.ref == 'refs/heads/main'  # Apenas em produção
+        uses: actions/upload-artifact@v3
+        with:
+          name: latest-tag
+          path: artifacts/latest-tag.txt

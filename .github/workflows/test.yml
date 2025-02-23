@@ -10,12 +10,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
       fail-fast: false
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -24,22 +22,8 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '21'
-          distribution: 'temurin'
-
-      - name: Verify Java version
-        run: java -version
-
-      - name: Verify service health
-        run: |
-          echo "Verifying service health..."
-          for i in {1..5}; do
-            if curl -f http://localhost:8080/actuator/health; then
-              echo "Service is healthy!"
-              break
-            fi
-            echo "Waiting for service to be healthy..."
-            sleep 10
-          done
+          distribution: 'openjdk'
+          cache: 'maven'
 
       - name: Test Microservice ${{ matrix.ms }}
         run: |
@@ -47,6 +31,3 @@ jobs:
           mvn test
         env:
           SPRING_PROFILES_ACTIVE: ${{ inputs.spring_profile }}
-
-      - name: Stop containers after testing
-        run: docker-compose down

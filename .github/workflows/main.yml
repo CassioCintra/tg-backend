@@ -7,6 +7,9 @@ on:
       - dev
 
 jobs:
+  validate:
+    uses: ./.github/workflows/validate.yml
+
   build:
     needs: validate
     uses: ./.github/workflows/build.yml
@@ -24,3 +27,4 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+      environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
