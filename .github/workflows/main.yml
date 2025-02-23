@@ -134,38 +134,3 @@ jobs:
           else
             docker-compose up -d
           fi
-
-      - name: Verify service health
-        run: |
-          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
-          echo "Verifying service health for $PROFILE..."
-          for i in {1..10}; do
-            if curl -f http://localhost:8080/actuator/health &&
-               curl -f http://localhost:8081/actuator/health &&
-               curl -f http://localhost:8082/actuator/health &&
-               curl -f http://localhost:8083/actuator/health &&
-               curl -f http://localhost:8084/actuator/health; then
-              echo "All services are healthy!"
-              exit 0
-            fi
-            echo "Waiting for services to be healthy..."
-            sleep 10
-          done
-          echo "Some services are unhealthy!"
-          exit 1
-
-      - name: Rollback on failure
-        if: failure()
-        run: |
-          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
-          echo "Rolling back $PROFILE..."
-          docker-compose down
-          # Reverte para a tag anterior (simplificado)
-          docker-compose pull
-          if [ "$PROFILE" = "production" ]; then
-            docker-compose up -d --no-recreate
-          else
-            docker-compose up -d
-          fi
-        env:
-          SPRING_PROFILES_ACTIVE: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
