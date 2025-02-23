@@ -54,10 +54,10 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: /tmp/.buildx-cache-${{ matrix.ms }}  # Diferencia o cache por microserviço
+          key: ${{ runner.os }}-buildx-${{ matrix.ms }}-${{ github.sha }}  # Chave única por microserviço
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-${{ matrix.ms }}-
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -85,6 +85,6 @@ jobs:
           docker buildx build \
             -t cassiocintra/tg-backend:$TAG \
             --build-arg SPRING_PROFILES_ACTIVE=$PROFILE \
-            --cache-from=type=local,src=/tmp/.buildx-cache \
-            --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
+            --cache-from=type=local,src=/tmp/.buildx-cache-${{ matrix.ms }} \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-${{ matrix.ms }},mode=max \
             --push .
