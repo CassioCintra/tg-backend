@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
-      fail-fast: false
+      fail-fast: false  # Permite que os outros serviços continuem mesmo se um falhar
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,8 +26,43 @@ jobs:
           cd ${{ matrix.ms }}
           mvn clean install -DskipTests
 
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.ms }}-build
+          path: ${{ matrix.ms }}/target/*.jar
+
+  push:
+    needs: build  # Só executa após todos os builds terminarem
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Login to Docker Hub
         run: |

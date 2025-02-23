@@ -5,7 +5,10 @@ on:
     branches:
       - main
       - dev
-
+  pull_request:
+    branches:
+      - main
+      - dev
 jobs:
   validate:
     uses: ./.github/workflows/validate.yml
@@ -16,7 +19,7 @@ jobs:
     secrets: inherit
 
   test:
-    needs: build
+    needs: build.push
     uses: ./.github/workflows/test.yml
 
   deploy:
