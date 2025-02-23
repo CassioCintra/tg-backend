@@ -31,6 +31,7 @@ jobs:
         with:
           name: ${{ matrix.ms }}-build
           path: ${{ matrix.ms }}/target/*.jar
+          if-no-files-found: error  # Falha se nenhum arquivo for encontrado
 
   push:
     needs: build
@@ -51,7 +52,7 @@ jobs:
           cache: 'maven'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
