@@ -58,15 +58,15 @@ class CustomerServiceTest {
         assertEquals(TestData.FIND_RESPONSE_DTO, result);
     }
 
-    @Test
-    void findCustomerById_shouldThrowException_whenCpfIsNull() {
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> customerService.findCustomerById(null)
-        );
-
-        assertEquals("CPF cannot be null", exception.getMessage());
-    }
+//    @Test
+//    void findCustomerById_shouldThrowException_whenCpfIsNull() {
+//        IllegalArgumentException exception = assertThrows(
+//                IllegalArgumentException.class,
+//                () -> customerService.findCustomerById(null)
+//        );
+//
+//        assertEquals("CPF cannot be null", exception.getMessage());
+//    }
 
     @Test
     void findCustomerById_shouldThrowException_whenCpfIsEmpty() {

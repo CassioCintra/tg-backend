@@ -14,10 +14,14 @@
         <module name="ms-order" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ms-customer (1)" target="21" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="ms-customer" options="-parameters" />
+      <module name="ms-customer (1)" options="-parameters" />
       <module name="ms-delivery" options="-parameters" />
       <module name="ms-order" options="-parameters" />
       <module name="ms-product" options="-parameters" />
