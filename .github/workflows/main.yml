@@ -19,7 +19,7 @@ jobs:
     secrets: inherit
 
   test:
-    needs: build.push
+    needs: build
     uses: ./.github/workflows/test.yml
 
   deploy:
