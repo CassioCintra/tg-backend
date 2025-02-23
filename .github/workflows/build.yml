@@ -27,7 +27,7 @@ jobs:
           mvn clean install -DskipTests
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.ms }}-build
           path: ${{ matrix.ms }}/target/*.jar
@@ -51,7 +51,7 @@ jobs:
           cache: 'maven'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
