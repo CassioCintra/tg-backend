@@ -32,7 +32,7 @@ jobs:
         with:
           name: latest-tag
           path: artifacts/
-        continue-on-error: true  # Caso seja a primeira execução e não haja artefato
+        continue-on-error: true
 
       - name: Load previous tag
         id: previous
