@@ -51,7 +51,7 @@ jobs:
           cache: 'maven'
 
       - name: Cache Docker layers
-        uses: actions/cache@4
+        uses: actions/cache@3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
