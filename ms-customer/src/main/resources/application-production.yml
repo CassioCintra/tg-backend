@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  # Application
+  application:
+    name: ms-customer
+
+  # Locale
+  web:
+    locale-resolver: fixed
+    locale: pt-BR
+    cors:
+      allowed-origins: "http://localhost:4200"
+      allowed-methods: "GET,POST,PUT,DELETE"
+      allowed-headers: "Content-Type,Authorization"
+      allow-credentials: true
+      max-age: 3600
+
+  #PostgreSQL Database Connection Config
+  datasource:
+    url: jdbc:postgresql://db.ffszbrjsbhmwfsxoenvt.supabase.co:5432/postgres?user=postgres&password=IjfSFcmjc5XTo3TM
+    username: postgres
+    password: IjfSFcmjc5XTo3TM
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Config
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+# Springdoc OpenApi 3.1 & Swagger 3
+springdoc:
+  swagger-ui:
+    path: /docs.html
+  api-docs:
+    path: /docs
+  packages-to-scan: tg.espetinho.web.controller
