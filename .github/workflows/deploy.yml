@@ -24,11 +24,6 @@ jobs:
 
       - name: Deploy services
         run: |
-          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
+          export PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
           echo "Deploying to $PROFILE..."
-          export SPRING_PROFILES_ACTIVE=$PROFILE
-          if [ "$PROFILE" = "production" ]; then
-            docker-compose up -d --no-recreate
-          else
-            docker-compose up -d
-          fi
+          docker-compose -f docker-compose.yml up -d --pull always
