@@ -20,53 +20,42 @@ jobs:
 
       - name: Clean up old Docker Hub tags
         run: |
-          # Configurações
           USERNAME="${{ secrets.DOCKER_USERNAME }}"
-          REPO="tg-backend"
           PASSWORD="${{ secrets.DOCKER_PASSWORD }}"
           PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
           MICROSERVICES="ms-customer ms-delivery ms-order ms-product ms-shopping-cart"
 
-          # Verifica se as credenciais estão definidas
           if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
             echo "Erro: DOCKER_USERNAME ou DOCKER_PASSWORD não estão definidos."
             exit 1
           fi
 
-          # Obter token de autenticação
           TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
             -d "{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}" \
             https://hub.docker.com/v2/users/login/ | jq -r .token)
 
           if [ -z "$TOKEN" ]; then
-            echo "Erro: Não foi possível obter o token. Verifique suas credenciais."
+            echo "Erro: Não foi possível obter o token."
             exit 1
           fi
 
-          # Iterar sobre cada microserviço
           for MS in $MICROSERVICES; do
             echo "Processando $MS no perfil $PROFILE..."
-
-            # Obter todas as tags filtradas por perfil e microserviço
             IMAGE_NAME="$PROFILE-$MS"
             TAGS=$(curl -s -H "Authorization: JWT $TOKEN" \
               "https://hub.docker.com/v2/repositories/$USERNAME/$IMAGE_NAME/tags/?page_size=100" | \
-              jq -r ".results[] | [.name, .last_updated] | join(\" \")")
+              jq -r ".results[] | select(.name != \"latest\") | [.name, .last_updated] | join(\" \")")
 
-            # Converter para array e ordenar por data (mais recente primeiro)
             mapfile -t SORTED_TAGS < <(echo "$TAGS" | sort -k2 -r)
-
-            # Verificar quantas tags existem para este microserviço
             TOTAL_TAGS=${#SORTED_TAGS[@]}
-            echo "Total de tags encontradas para $MS: $TOTAL_TAGS"
+            echo "Total de tags (exceto latest) para $MS: $TOTAL_TAGS"
 
-            if [ "$TOTAL_TAGS" -le 1 ]; then
-              echo "Apenas 1 ou nenhuma tag para $MS. Nenhuma exclusão necessária."
+            if [ "$TOTAL_TAGS" -eq 0 ]; then
+              echo "Nenhuma tag para limpar (exceto latest) para $MS."
               continue
             fi
 
-            # Manter apenas a mais recente e excluir as demais
-            echo "Mantendo a tag mais recente para $MS:"
+            echo "Mantendo a tag mais recente para $MS (além de latest):"
             TAG_NAME=$(echo "${SORTED_TAGS[0]}" | awk '{print $1}')
             echo "- $TAG_NAME"
 

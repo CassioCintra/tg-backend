@@ -1,71 +1,37 @@
+version: '3.8'
+
 services:
   ms-customer:
-    container_name: ms-customer
-    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
-    restart: on-failure
+    image: cassiocintra/${PROFILE}-ms-customer:latest
     ports:
       - "8080:8080"
-    build: ./ms-customer
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-    depends_on:
-      - ms-order
-    networks:
-      - backend
+      - SPRING_PROFILES_ACTIVE=${PROFILE}
 
   ms-delivery:
-    container_name: ms-delivery
-    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
-    restart: on-failure
+    image: cassiocintra/${PROFILE}-ms-delivery:latest
     ports:
       - "8081:8081"
-    build: ./ms-delivery
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-    networks:
-      - backend
+      - SPRING_PROFILES_ACTIVE=${PROFILE}
 
   ms-order:
-    container_name: ms-order
-    restart: on-failure
-    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
+    image: cassiocintra/${PROFILE}-ms-order:latest
     ports:
       - "8082:8082"
-    build: ./ms-order
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-    depends_on:
-      - ms-shopping-cart
-      - ms-delivery
-    networks:
-      - backend
+      - SPRING_PROFILES_ACTIVE=${PROFILE}
 
   ms-product:
-    container_name: ms-product
-    restart: on-failure
-    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
+    image: cassiocintra/${PROFILE}-ms-product:latest
     ports:
       - "8083:8083"
-    build: ./ms-product
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-    networks:
-      - backend
+      - SPRING_PROFILES_ACTIVE=${PROFILE}
 
   ms-shopping-cart:
-    container_name: ms-shopping-cart
-    restart: on-failure
-    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
+    image: cassiocintra/${PROFILE}-ms-shopping-cart:latest
     ports:
       - "8084:8084"
-    build: ./ms-shopping-cart
     environment:
-      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-    depends_on:
-      - ms-product
-    networks:
-      - backend
-
-networks:
-  backend:
-    driver: bridge
+      - SPRING_PROFILES_ACTIVE=${PROFILE}

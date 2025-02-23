@@ -54,8 +54,8 @@ jobs:
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache-${{ matrix.ms }}  # Diferencia o cache por microserviço
-          key: ${{ runner.os }}-buildx-${{ matrix.ms }}-${{ github.sha }}  # Chave única por microserviço
+          path: /tmp/.buildx-cache-${{ matrix.ms }}
+          key: ${{ runner.os }}-buildx-${{ matrix.ms }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-${{ matrix.ms }}-
 
@@ -81,9 +81,10 @@ jobs:
           cd ${{ matrix.ms }}
           PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
           VERSION="${{ steps.get-version.outputs.version }}"
-          TAG="$PROFILE-${{ matrix.ms }}-$VERSION"
+          IMAGE_NAME="cassiocintra/$PROFILE-${{ matrix.ms }}"
           docker buildx build \
-            -t cassiocintra/tg-backend:$TAG \
+            -t $IMAGE_NAME:$VERSION \
+            -t $IMAGE_NAME:latest \
             --build-arg SPRING_PROFILES_ACTIVE=$PROFILE \
             --cache-from=type=local,src=/tmp/.buildx-cache-${{ matrix.ms }} \
             --cache-to=type=local,dest=/tmp/.buildx-cache-${{ matrix.ms }},mode=max \
