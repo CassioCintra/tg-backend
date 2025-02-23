@@ -36,3 +36,10 @@ springdoc:
   api-docs:
     path: /docs
   packages-to-scan: tg.espetinho.web.controller
+
+# Health
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
