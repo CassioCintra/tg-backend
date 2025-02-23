@@ -1,0 +1,23 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  test:
+    needs: build
+    uses: ./.github/workflows/test.yml
+    with:
+      spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+
+  deploy:
+    needs: test
+    uses: ./.github/workflows/deploy.yml
+    with:
+      spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}

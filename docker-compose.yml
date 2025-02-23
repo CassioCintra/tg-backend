@@ -1,4 +1,3 @@
-version: '3'
 services:
   ms-customer:
     container_name: ms-customer
@@ -29,6 +28,7 @@ services:
   ms-order:
     container_name: ms-order
     restart: on-failure
+    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
     ports:
       - "8082:8082"
     build: ./ms-order
@@ -43,6 +43,7 @@ services:
   ms-product:
     container_name: ms-product
     restart: on-failure
+    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
     ports:
       - "8083:8083"
     build: ./ms-product
@@ -54,6 +55,7 @@ services:
   ms-shopping-cart:
     container_name: ms-shopping-cart
     restart: on-failure
+    image: cassiocintra/tg-backend:${SPRING_PROFILES_ACTIVE}
     ports:
       - "8084:8084"
     build: ./ms-shopping-cart

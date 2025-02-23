@@ -1,0 +1,36 @@
+name: Test Microservices
+
+on:
+  workflow_call:
+    inputs:
+      spring_profile:
+        type: string
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'openjdk'
+
+      - name: Verify Java version
+        run: java -version
+
+      - name: Test Microservice ${{ matrix.ms }}
+        run: |
+          cd ${{ matrix.ms }}
+          mvn test
+        env:
+          SPRING_PROFILES_ACTIVE: ${{ inputs.spring_profile }}
