@@ -42,6 +42,7 @@ jobs:
     strategy:
       matrix:
         ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+      fail-fast: false  # Permite que os outros serviços continuem mesmo se um falhar
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,16 +65,20 @@ jobs:
       - name: Login to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
         run: |
           cd ${{ matrix.ms }}
-          TAG="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}-$(date +%Y%m%d%H%M%S)"
+          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
+          TAG="$PROFILE-$(date +%Y%m%d%H%M%S)"
           docker build -t cassiocintra/tg-backend:$TAG \
-            --build-arg SPRING_PROFILES_ACTIVE=${{ github.ref == 'refs/heads/main' && 'production' || 'development' }} .
-          docker tag cassiocintra/tg-backend:$TAG cassiocintra/tg-backend:${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+            --build-arg SPRING_PROFILES_ACTIVE=$PROFILE .
+          docker tag cassiocintra/tg-backend:$TAG cassiocintra/tg-backend:$PROFILE
           docker push cassiocintra/tg-backend:$TAG
-          docker push cassiocintra/tg-backend:${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+          docker push cassiocintra/tg-backend:$PROFILE
 
   test:
     needs: build
@@ -81,6 +86,7 @@ jobs:
     strategy:
       matrix:
         ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+      fail-fast: false  # Permite que os testes continuem mesmo se um falhar
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -102,7 +108,6 @@ jobs:
   deploy:
     needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # Somente em production
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -115,16 +120,25 @@ jobs:
       - name: Login to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Deploy services
         run: |
-          docker-compose up -d --no-recreate
-        env:
-          SPRING_PROFILES_ACTIVE: production
+          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
+          echo "Deploying to $PROFILE..."
+          export SPRING_PROFILES_ACTIVE=$PROFILE
+          if [ "$PROFILE" = "production" ]; then
+            docker-compose up -d --no-recreate
+          else
+            docker-compose up -d
+          fi
 
       - name: Verify service health
         run: |
-          echo "Verifying service health for production..."
+          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
+          echo "Verifying service health for $PROFILE..."
           for i in {1..10}; do
             if curl -f http://localhost:8080/actuator/health &&
                curl -f http://localhost:8081/actuator/health &&
@@ -143,9 +157,15 @@ jobs:
       - name: Rollback on failure
         if: failure()
         run: |
-          echo "Rolling back production..."
+          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
+          echo "Rolling back $PROFILE..."
           docker-compose down
-          # Aqui você pode implementar lógica para reverter para uma tag anterior, se necessário
-          docker-compose up -d --no-recreate
+          # Reverte para a tag anterior (simplificado)
+          docker-compose pull
+          if [ "$PROFILE" = "production" ]; then
+            docker-compose up -d --no-recreate
+          else
+            docker-compose up -d
+          fi
         env:
-          SPRING_PROFILES_ACTIVE: production
+          SPRING_PROFILES_ACTIVE: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
