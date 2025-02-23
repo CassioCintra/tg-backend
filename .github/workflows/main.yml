@@ -7,8 +7,33 @@ on:
       - dev
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Validate dependencies
+        run: |
+          echo "Validating dependencies..."
+          mvn dependency:resolve
+
+      - name: Lint code
+        run: |
+          echo "Running linting..."
+          mvn checkstyle:check
+
   build:
+    needs: validate
     uses: ./.github/workflows/build.yml
+    with:
+      spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
 
   test:
     needs: build

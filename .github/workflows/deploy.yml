@@ -17,46 +17,50 @@ jobs:
 
       - name: Set up Docker Compose
         run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
           sudo chmod +x /usr/local/bin/docker-compose
           docker-compose --version
 
+      - name: Save current image tag
+        run: |
+          echo "CURRENT_TAG=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
       - name: Start containers
-        run: docker-compose up -d
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "Deploying to production..."
+          else
+            echo "Deploying to development..."
+          fi
+          docker-compose up -d
         env:
           SPRING_PROFILES_ACTIVE: ${{ inputs.spring_profile }}
 
       - name: Verify service health
         run: |
           echo "Verifying service health..."
-          sleep 10 # Espera um pouco para os serviços subirem
-          if ! curl -f http://localhost:8080/actuator/health; then
-            echo "ms-customer service is unhealthy!"
-            exit 1
-          fi
-          if ! curl -f http://localhost:8081/actuator/health; then
-            echo "ms-delivery service is unhealthy!"
-            exit 1
-          fi
-          if ! curl -f http://localhost:8082/actuator/health; then
-            echo "ms-order service is unhealthy!"
-            exit 1
-          fi
-          if ! curl -f http://localhost:8083/actuator/health; then
-            echo "ms-product service is unhealthy!"
-            exit 1
-          fi
-          if ! curl -f http://localhost:8084/actuator/health; then
-            echo "ms-shopping-cart service is unhealthy!"
-            exit 1
-          fi
-          echo "All services are healthy!"
+          for i in {1..10}; do
+            if curl -f http://localhost:8080/actuator/health &&
+               curl -f http://localhost:8081/actuator/health &&
+               curl -f http://localhost:8082/actuator/health &&
+               curl -f http://localhost:8083/actuator/health &&
+               curl -f http://localhost:8084/actuator/health; then
+              echo "All services are healthy!"
+              exit 0
+            fi
+            echo "Waiting for services to be healthy..."
+            sleep 10
+          done
+          echo "Some services are unhealthy!"
+          exit 1
 
       - name: Rollback on failure
-        if: failure()
+        if: failure() && github.ref == 'refs/heads/main'
         run: |
           echo "Rolling back due to failed health check..."
           docker-compose down
+          # Usar a tag anterior salva
+          docker-compose up -d --tag ${{ env.CURRENT_TAG }}
           echo "Rollback completed."
 
       - name: Clean up old images and containers
