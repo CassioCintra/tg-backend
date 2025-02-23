@@ -48,9 +48,10 @@ jobs:
             echo "Processando $MS no perfil $PROFILE..."
 
             # Obter todas as tags filtradas por perfil e microserviço
+            IMAGE_NAME="$PROFILE-$MS"
             TAGS=$(curl -s -H "Authorization: JWT $TOKEN" \
-              "https://hub.docker.com/v2/repositories/$USERNAME/$REPO/tags/?page_size=100" | \
-              jq -r ".results[] | select(.name | test(\"^$PROFILE-$MS-\")) | [.name, .last_updated] | join(\" \")")
+              "https://hub.docker.com/v2/repositories/$USERNAME/$IMAGE_NAME/tags/?page_size=100" | \
+              jq -r ".results[] | [.name, .last_updated] | join(\" \")")
 
             # Converter para array e ordenar por data (mais recente primeiro)
             mapfile -t SORTED_TAGS < <(echo "$TAGS" | sort -k2 -r)
@@ -74,7 +75,7 @@ jobs:
               TAG_NAME=$(echo "${SORTED_TAGS[$i]}" | awk '{print $1}')
               echo "Excluindo $TAG_NAME..."
               curl -s -X DELETE -H "Authorization: JWT $TOKEN" \
-                "https://hub.docker.com/v2/repositories/$USERNAME/$REPO/tags/$TAG_NAME/"
+                "https://hub.docker.com/v2/repositories/$USERNAME/$IMAGE_NAME/tags/$TAG_NAME/"
             done
           done
 
