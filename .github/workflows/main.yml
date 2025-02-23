@@ -27,3 +27,8 @@ jobs:
     needs: test
     uses: ./.github/workflows/deploy.yml
     secrets: inherit
+
+  cleanup:
+    needs: deploy
+    uses: ./.github/workflows/cleanup.yml
+    secrets: inherit
