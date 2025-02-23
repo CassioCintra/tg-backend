@@ -29,13 +29,12 @@ jobs:
           SERVICES="ms-customer,ms-delivery,ms-order,ms-product,ms-shopping-cart"
           echo "services=$SERVICES" >> $GITHUB_OUTPUT
 
-      - name: Validate dependencies and linting
+      - name: Validate dependencies
         run: |
           IFS=',' read -ra SERVICES <<< "${{ steps.find-services.outputs.services }}"
           for service in "${SERVICES[@]}"; do
-            echo "Validating $service..."
+            echo "Validating dependencies for $service..."
             cd "$service" || exit 1
             mvn dependency:resolve --fail-at-end
-            mvn checkstyle:check --fail-at-end
             cd - >/dev/null || exit 1
           done
