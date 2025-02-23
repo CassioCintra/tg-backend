@@ -89,3 +89,4 @@ jobs:
             --cache-from=type=local,src=/tmp/.buildx-cache-${{ matrix.ms }} \
             --cache-to=type=local,dest=/tmp/.buildx-cache-${{ matrix.ms }},mode=max \
             --push .
+          echo "Pushed $IMAGE_NAME:$VERSION and $IMAGE_NAME:latest"

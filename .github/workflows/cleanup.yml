@@ -50,8 +50,8 @@ jobs:
             TOTAL_TAGS=${#SORTED_TAGS[@]}
             echo "Total de tags (exceto latest) para $MS: $TOTAL_TAGS"
 
-            if [ "$TOTAL_TAGS" -eq 0 ]; then
-              echo "Nenhuma tag para limpar (exceto latest) para $MS."
+            if [ "$TOTAL_TAGS" -le 1 ]; then
+              echo "Apenas 1 ou nenhuma tag para limpar (exceto latest) para $MS. Nenhuma exclusão necessária."
               continue
             fi
 
