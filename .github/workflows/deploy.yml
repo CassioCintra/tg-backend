@@ -1,15 +1,19 @@
 name: Deploy Microservices
+
 on:
   push:
     branches:
       - main
       - dev
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
       - name: Set environment variables
         run: |
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
@@ -17,17 +21,21 @@ jobs:
           elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
             echo "SPRING_PROFILES_ACTIVE=development" >> $GITHUB_ENV
           fi
+
       - name: Login to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
       - name: Build Docker image
         run: |
           docker-compose build
         env:
           SPRING_PROFILES_ACTIVE: ${{ env.SPRING_PROFILES_ACTIVE }}
+
       - name: Push Docker images
         run: |
           docker-compose push
         env:
           SPRING_PROFILES_ACTIVE: ${{ env.SPRING_PROFILES_ACTIVE }}
+
       - name: Start containers
         run: docker-compose up -d
