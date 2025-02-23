@@ -1,17 +1,10 @@
 name: Build and Push Images
 
 on:
-  workflow_run:
-    workflows: ["Validate Dependencies"]
-    types:
-      - completed
-    branches:
-      - main
-      - dev
+  workflow_call:
 
 jobs:
   build:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # Só executa se o validate for bem-sucedido
     runs-on: ubuntu-latest
     strategy:
       matrix:
