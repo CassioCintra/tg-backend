@@ -1,5 +1,5 @@
 name: CI/CD Pipeline
-# comentario pro push
+
 on:
   push:
     branches:
@@ -8,29 +8,144 @@ on:
 
 jobs:
   validate:
-    uses: ./.github/workflows/validate.yml
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Find microservices
+        id: find-services
+        run: |
+          SERVICES="ms-customer,ms-delivery,ms-order,ms-product,ms-shopping-cart"
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+
+      - name: Validate dependencies
+        run: |
+          IFS=',' read -ra SERVICES <<< "${{ steps.find-services.outputs.services }}"
+          for service in "${SERVICES[@]}"; do
+            echo "Validating dependencies for $service..."
+            cd "$service" || exit 1
+            mvn dependency:resolve --fail-at-end
+            cd - >/dev/null || exit 1
+          done
 
   build:
     needs: validate
-    uses: ./.github/workflows/build.yml
-    with:
-      spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
-    secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build Maven package
+        run: |
+          cd ${{ matrix.ms }}
+          mvn clean install -DskipTests
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          cd ${{ matrix.ms }}
+          TAG="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}-$(date +%Y%m%d%H%M%S)"
+          docker build -t cassiocintra/tg-backend:$TAG \
+            --build-arg SPRING_PROFILES_ACTIVE=${{ github.ref == 'refs/heads/main' && 'production' || 'development' }} .
+          docker tag cassiocintra/tg-backend:$TAG cassiocintra/tg-backend:${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+          docker push cassiocintra/tg-backend:$TAG
+          docker push cassiocintra/tg-backend:${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
 
   test:
     needs: build
-    uses: ./.github/workflows/test.yml
-    with:
-      spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Test Microservice ${{ matrix.ms }}
+        run: |
+          cd ${{ matrix.ms }}
+          mvn test
+        env:
+          SPRING_PROFILES_ACTIVE: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
 
   deploy:
     needs: test
-    uses: ./.github/workflows/deploy.yml
-    with:
-      spring_profile: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
-      environment: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
-    secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'  # Somente em production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Deploy services
+        run: |
+          docker-compose up -d --no-recreate
+        env:
+          SPRING_PROFILES_ACTIVE: production
+
+      - name: Verify service health
+        run: |
+          echo "Verifying service health for production..."
+          for i in {1..10}; do
+            if curl -f http://localhost:8080/actuator/health &&
+               curl -f http://localhost:8081/actuator/health &&
+               curl -f http://localhost:8082/actuator/health &&
+               curl -f http://localhost:8083/actuator/health &&
+               curl -f http://localhost:8084/actuator/health; then
+              echo "All services are healthy!"
+              exit 0
+            fi
+            echo "Waiting for services to be healthy..."
+            sleep 10
+          done
+          echo "Some services are unhealthy!"
+          exit 1
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          echo "Rolling back production..."
+          docker-compose down
+          # Aqui você pode implementar lógica para reverter para uma tag anterior, se necessário
+          docker-compose up -d --no-recreate
+        env:
+          SPRING_PROFILES_ACTIVE: production
