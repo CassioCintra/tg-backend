@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="ms-delivery" />
+        <module name="ms-shopping-cart" />
+        <module name="ms-customer" />
+        <module name="ms-product" />
+        <module name="ms-order" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="ms-customer" options="-parameters" />
+      <module name="ms-delivery" options="-parameters" />
+      <module name="ms-order" options="-parameters" />
+      <module name="ms-product" options="-parameters" />
+      <module name="ms-shopping-cart" options="-parameters" />
+    </option>
+  </component>
+</project>
