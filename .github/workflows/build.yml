@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         ms: ['ms-customer', 'ms-delivery', 'ms-order', 'ms-product', 'ms-shopping-cart']
-      fail-fast: false  # Permite que os outros serviços continuem mesmo se um falhar
+      fail-fast: false
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,13 +27,14 @@ jobs:
           mvn clean install -DskipTests
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.ms }}-build
           path: ${{ matrix.ms }}/target/*.jar
+          if-no-files-found: error
 
   push:
-    needs: build  # Só executa após todos os builds terminarem
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -51,18 +52,15 @@ jobs:
           cache: 'maven'
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          path: /tmp/.buildx-cache-${{ matrix.ms }}  # Diferencia o cache por microserviço
+          key: ${{ runner.os }}-buildx-${{ matrix.ms }}-${{ github.sha }}  # Chave única por microserviço
           restore-keys: |
-            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-${{ matrix.ms }}-
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Login to Docker Hub
         run: |
@@ -71,13 +69,22 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Extract version from pom.xml
+        id: get-version
+        run: |
+          cd ${{ matrix.ms }}
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         run: |
           cd ${{ matrix.ms }}
           PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
-          TAG="$PROFILE-$(date +%Y%m%d%H%M%S)"
-          docker build -t cassiocintra/tg-backend:$TAG \
-            --build-arg SPRING_PROFILES_ACTIVE=$PROFILE .
-          docker tag cassiocintra/tg-backend:$TAG cassiocintra/tg-backend:$PROFILE
-          docker push cassiocintra/tg-backend:$TAG
-          docker push cassiocintra/tg-backend:$PROFILE
+          VERSION="${{ steps.get-version.outputs.version }}"
+          TAG="$PROFILE-${{ matrix.ms }}-$VERSION"
+          docker buildx build \
+            -t cassiocintra/tg-backend:$TAG \
+            --build-arg SPRING_PROFILES_ACTIVE=$PROFILE \
+            --cache-from=type=local,src=/tmp/.buildx-cache-${{ matrix.ms }} \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-${{ matrix.ms }},mode=max \
+            --push .

@@ -1,0 +1,81 @@
+name: Clean Up Docker Hub Tags
+
+on:
+  workflow_call:
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Clean up old Docker Hub tags
+        run: |
+          # Configurações
+          USERNAME="${{ secrets.DOCKER_USERNAME }}"
+          REPO="tg-backend"
+          PASSWORD="${{ secrets.DOCKER_PASSWORD }}"
+          PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
+          MICROSERVICES="ms-customer ms-delivery ms-order ms-product ms-shopping-cart"
+
+          # Verifica se as credenciais estão definidas
+          if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ]; then
+            echo "Erro: DOCKER_USERNAME ou DOCKER_PASSWORD não estão definidos."
+            exit 1
+          fi
+
+          # Obter token de autenticação
+          TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
+            -d "{\"username\": \"$USERNAME\", \"password\": \"$PASSWORD\"}" \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+
+          if [ -z "$TOKEN" ]; then
+            echo "Erro: Não foi possível obter o token. Verifique suas credenciais."
+            exit 1
+          fi
+
+          # Iterar sobre cada microserviço
+          for MS in $MICROSERVICES; do
+            echo "Processando $MS no perfil $PROFILE..."
+
+            # Obter todas as tags filtradas por perfil e microserviço
+            TAGS=$(curl -s -H "Authorization: JWT $TOKEN" \
+              "https://hub.docker.com/v2/repositories/$USERNAME/$REPO/tags/?page_size=100" | \
+              jq -r ".results[] | select(.name | test(\"^$PROFILE-$MS-\")) | [.name, .last_updated] | join(\" \")")
+
+            # Converter para array e ordenar por data (mais recente primeiro)
+            mapfile -t SORTED_TAGS < <(echo "$TAGS" | sort -k2 -r)
+
+            # Verificar quantas tags existem para este microserviço
+            TOTAL_TAGS=${#SORTED_TAGS[@]}
+            echo "Total de tags encontradas para $MS: $TOTAL_TAGS"
+
+            if [ "$TOTAL_TAGS" -le 1 ]; then
+              echo "Apenas 1 ou nenhuma tag para $MS. Nenhuma exclusão necessária."
+              continue
+            fi
+
+            # Manter apenas a mais recente e excluir as demais
+            echo "Mantendo a tag mais recente para $MS:"
+            TAG_NAME=$(echo "${SORTED_TAGS[0]}" | awk '{print $1}')
+            echo "- $TAG_NAME"
+
+            echo "Excluindo as tags restantes para $MS:"
+            for ((i=1; i<TOTAL_TAGS; i++)); do
+              TAG_NAME=$(echo "${SORTED_TAGS[$i]}" | awk '{print $1}')
+              echo "Excluindo $TAG_NAME..."
+              curl -s -X DELETE -H "Authorization: JWT $TOKEN" \
+                "https://hub.docker.com/v2/repositories/$USERNAME/$REPO/tags/$TAG_NAME/"
+            done
+          done
+
+          echo "Limpeza concluída!"

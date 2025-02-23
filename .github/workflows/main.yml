@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - dev
+
 jobs:
   validate:
     uses: ./.github/workflows/validate.yml
@@ -25,4 +26,9 @@ jobs:
   deploy:
     needs: test
     uses: ./.github/workflows/deploy.yml
+    secrets: inherit
+
+  cleanup:
+    needs: deploy
+    uses: ./.github/workflows/cleanup.yml
     secrets: inherit
