@@ -31,7 +31,7 @@ jobs:
         with:
           name: ${{ matrix.ms }}-build
           path: ${{ matrix.ms }}/target/*.jar
-          if-no-files-found: error  # Falha se nenhum arquivo for encontrado
+          if-no-files-found: error
 
   push:
     needs: build
@@ -61,9 +61,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Login to Docker Hub
         run: |
@@ -85,6 +82,9 @@ jobs:
           PROFILE="${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}"
           VERSION="${{ steps.get-version.outputs.version }}"
           TAG="$PROFILE-${{ matrix.ms }}-$VERSION"
-          docker build -t cassiocintra/tg-backend:$TAG \
-            --build-arg SPRING_PROFILES_ACTIVE=$PROFILE .
-          docker push cassiocintra/tg-backend:$TAG
+          docker buildx build \
+            -t cassiocintra/tg-backend:$TAG \
+            --build-arg SPRING_PROFILES_ACTIVE=$PROFILE \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache,mode=max \
+            --push .
